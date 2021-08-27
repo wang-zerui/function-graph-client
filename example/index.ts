@@ -13,6 +13,8 @@ import { DeleteFunctionRequest } from '../functionGraph/model/DeleteFunctionRequ
 import { UpdateFunctionConfigRequestBody } from "../functionGraph/model/UpdateFunctionConfigRequestBody";
 import { UpdateFunctionConfigRequest } from "../functionGraph/model/UpdateFunctionConfigRequest";
 import express = require('express')
+import { CreateTriggerRequestBody } from "../functionGraph/model/CreateTriggerRequestBody";
+import { CreateTriggerRequest } from "../functionGraph/model/CreateTriggerRequest";
 
 const ak = '6T9ZUN0WWK4SDIAWJVOJ';
 const sk = 'JeIqadapRve0GAndO29VvuIpE7XdNh59iUKTktkx';
@@ -132,6 +134,32 @@ app.get('/deleteFunction', async function(req: any, res: { send: (arg0: string) 
     const func_urn = "urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-14"
     const result = await client.deleteFunction(new DeleteFunctionRequest()
         .withFunctionUrn(func_urn))
+    res.send(`${JSON.stringify(result)}`);
+})
+
+app.get('/createTrigger', async function(req: any, res: { send: (arg0: string) => void;}){
+    const app: express.Application = express();
+    const client = new FunctionGraphClient()
+        .withAk(ak)
+        .withSk(sk)
+        .withProjectId(projectId)
+        .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com') //https://developer.huaweicloud.com/endpoint?FunctionGraph
+    const body = new CreateTriggerRequestBody()
+        .withTriggerTypeCode("TIMER")
+        .withTriggerStatus("ACTIVE")
+        .withEventTypeCode("MessageCreated")
+        .withEventData({
+            "name" : "Timer-fbb4",
+            "schedule" : "3m",
+            "schedule_type" : "Rate",
+            "user_event" : ""
+        })
+    
+    let data = "";
+    let result = await client.createTrigger(new CreateTriggerRequest()
+        .withFunctionUrn("urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-15")
+        .withBody(body));
+    
     res.send(`${JSON.stringify(result)}`);
 })
 

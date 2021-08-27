@@ -7,6 +7,8 @@ import { UpdateFunctionResponse } from "./model/UpdateFunctionResponse";
 import { DeleteFunctionRequest } from "./model/DeleteFunctionRequest";
 import { UpdateFunctionConfigRequestBody } from "./model/UpdateFunctionConfigRequestBody";
 import { UpdateFunctionConfigRequest } from "./model/UpdateFunctionConfigRequest";
+import { CreateTriggerRequestBody } from "./model/CreateTriggerRequestBody";
+import { CreateTriggerRequest } from "./model/CreateTriggerRequest";
 var axios = require('axios');
 
 export class FunctionGraphClient {
@@ -88,6 +90,12 @@ export class FunctionGraphClient {
                 return res;
             })
     }
+
+    /**
+     * 更新函数配置
+     * @param updateFunctionConfigRequest 
+     * @returns 
+     */
     public async updateFunctionConfig(updateFunctionConfigRequest: UpdateFunctionConfigRequest): Promise<any>{
         const options = ParamCreater().updateFunctionConfig(updateFunctionConfigRequest, this);    
         return await axios(options)
@@ -132,13 +140,41 @@ export class FunctionGraphClient {
      * @param {RequiredError}
      */
     public async getFunctionList(getFunctionListRequest: GetFunctionListRequest): Promise<any> {
-        const options = ParamCreater().getFunctionList(getFunctionListRequest);
+        const options = ParamCreater().getFunctionList(getFunctionListRequest, this);
         return await axios(options)
             .then((res:any)=>{
                 return res.data;
             })
             .catch((err:any) => {
-                return err.message;
+                const res = {
+                    data: err.response.data,
+                    headers: err.response.headers,
+                    status: err.response.status,
+                    statesText: err.response.statusText
+                }
+                return res;
+            })
+    }
+
+    /**
+     * 创建触发器
+     * @param createTriggerRequest 
+     * @returns 
+     */
+    public async createTrigger(createTriggerRequest: CreateTriggerRequest): Promise<any> {
+        const options = ParamCreater().createTrigger(createTriggerRequest, this);
+        return await axios(options)
+            .then((res:any)=>{
+                return res.data;
+            })
+            .catch((err:any) => {
+                const res = {
+                    data: err.response.data,
+                    headers: err.response.headers,
+                    status: err.response.status,
+                    statesText: err.response.statusText
+                }
+                return res;
             })
     }
 }
@@ -150,7 +186,7 @@ export const ParamCreater = function () {
          * 此接口用于创建函数
          */
         createFunction(createFunctionRequest: CreateFunctionRequest, client: FunctionGraphClient) {
-            let options = {
+            const options = {
                 method: "POST",
                 url: `${client.endpoint}/v2/${client.project_id}/fgs/functions`,
                 headers: {"Content-Type": "application/json"},
@@ -248,14 +284,12 @@ export const ParamCreater = function () {
         /**
          * 此接口用于获取函数列表
          */
-        getFunctionList(getFunctionListRequest?: GetFunctionListRequest) {
+        getFunctionList(getFunctionListRequest: GetFunctionListRequest, client: FunctionGraphClient) {
             const options = {
                 method: "GET",
-                url: "/v2/{project_id}/fgs/functions",
-                queryParams: {},
-                pathParams: {},
-                headers: {},
-                data: {}
+                url: `${client.endpoint}/v2/${client.project_id}/fgs/functions`,
+                headers: {"Content-Type": "application/json"},
+                data: ""
             };
             const localVarQueryParameter = {} as any;
             let pkg;
@@ -267,9 +301,9 @@ export const ParamCreater = function () {
                 }
             }
             if (pkg !== null && pkg !== undefined) {
-                localVarQueryParameter['package'] = pkg;
+                options.url = options.url + `?package=${pkg}`
             }
-            options.queryParams = localVarQueryParameter;
+            options.headers = sign(options, client);
             return options;
         },
 
@@ -298,6 +332,34 @@ export const ParamCreater = function () {
             }
             options.url = options.url.replace('{function_urn}', func_urn);
             options.data = "";
+            options.headers = sign(options, client);
+            return options;
+        },
+
+        createTrigger(createTriggerRequest: CreateTriggerRequest, client: FunctionGraphClient) {
+            const options = {
+                method: "POST",
+                url: `${client.endpoint}/v2/${client.project_id}/fgs/triggers/`,
+                headers: {"Content-Type": "application/json"},
+                data: ""
+            }
+            let body: any;
+            let func_urn: any;
+            if (createTriggerRequest !== null && createTriggerRequest !== undefined) {
+                if (createTriggerRequest instanceof CreateTriggerRequest) {
+                    func_urn = createTriggerRequest.func_urn;
+                    body = createTriggerRequest.body;
+                } else {
+                    func_urn = createTriggerRequest['func_urn'];
+                    body = createTriggerRequest['body'];
+                }
+            }
+
+            if(body === null || body === undefined) {
+                throw new RequiredError('body', 'Required parameter body')
+            }
+            options.url = options.url + func_urn;
+            options.data =  JSON.stringify(Object.assign({}, body));
             options.headers = sign(options, client);
             return options;
         }
