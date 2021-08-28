@@ -9,6 +9,10 @@ import { UpdateFunctionConfigRequestBody } from "./model/UpdateFunctionConfigReq
 import { UpdateFunctionConfigRequest } from "./model/UpdateFunctionConfigRequest";
 import { CreateTriggerRequestBody } from "./model/CreateTriggerRequestBody";
 import { CreateTriggerRequest } from "./model/CreateTriggerRequest";
+import { UpdateTriggerRequest } from "./model/UpdateTriggerRequest";
+import { DeleteTriggerRequest } from "./model/DeleteTriggerRequest";
+import { Func } from "mocha";
+import { ListTriggerRequest } from "./model/ListTriggerRequest";
 var axios = require('axios');
 
 export class FunctionGraphClient {
@@ -177,6 +181,59 @@ export class FunctionGraphClient {
                 return res;
             })
     }
+
+    public async updateTrigger(updateTriggerRequest: UpdateTriggerRequest): Promise<any> {
+        const options = ParamCreater().updateTrigger(updateTriggerRequest, this);
+        return await axios(options)
+            .then((res:any)=>{
+                return res.data;
+            })
+            .catch((err:any) => {
+                const res = {
+                    data: err.response.data,
+                    headers: err.response.headers,
+                    status: err.response.status,
+                    statesText: err.response.statusText
+                }
+                return res;
+            })
+    }
+
+    public async deleteTrigger(deleteTriggerRequest: DeleteTriggerRequest): Promise<any> {
+        const options = ParamCreater().deleteTrigger(deleteTriggerRequest, this);
+        return await axios(options)
+            .then((res:any)=>{
+                return res.data;
+            })
+            .catch((err:any) => {
+                const res = {
+                    data: err.response.data,
+                    headers: err.response.headers,
+                    status: err.response.status,
+                    statesText: err.response.statusText
+                }
+                return res;
+            })
+    }
+
+    public async listTrigger(listTriggerRequest: ListTriggerRequest): Promise<any> {
+        const options = ParamCreater().listTrigger(listTriggerRequest, this);
+        return await axios(options)
+            .then((res:any)=>{
+                return res.data;
+            })
+            .catch((err:any) => {
+                const res = {
+                    data: err.response.data,
+                    headers: err.response.headers,
+                    status: err.response.status,
+                    statesText: err.response.statusText
+                }
+                return res;
+            })
+    }
+
+
 }
 
 export const ParamCreater = function () {
@@ -336,6 +393,12 @@ export const ParamCreater = function () {
             return options;
         },
 
+        /**
+         * 创建触发器函数
+         * @param createTriggerRequest 
+         * @param client 
+         * @returns 
+         */
         createTrigger(createTriggerRequest: CreateTriggerRequest, client: FunctionGraphClient) {
             const options = {
                 method: "POST",
@@ -360,6 +423,112 @@ export const ParamCreater = function () {
             }
             options.url = options.url + func_urn;
             options.data =  JSON.stringify(Object.assign({}, body));
+            options.headers = sign(options, client);
+            return options;
+        },
+
+        updateTrigger(updateTriggerRequest: UpdateTriggerRequest, client: FunctionGraphClient) {
+            let options = {
+                method: "PUT",
+                url: "",
+                headers: {"Content-Type": "application/json"},
+                data: ""
+            }
+            let func_urn: any;
+            let body: any;
+            let trigger_type_code: any;
+            let trigger_id: any;
+
+            if (updateTriggerRequest !== null && updateTriggerRequest !== undefined) {
+                if (updateTriggerRequest instanceof UpdateTriggerRequest) {
+                    func_urn = updateTriggerRequest.func_urn;
+                    trigger_type_code = updateTriggerRequest.trigger_type_code;
+                    trigger_id = updateTriggerRequest.trigger_id;
+                    body = updateTriggerRequest.body;
+                } else {
+                    func_urn = updateTriggerRequest['func_urn'];
+                    trigger_type_code = updateTriggerRequest['trigger_type_code'];
+                    trigger_id = updateTriggerRequest['trigger_id'];
+                    body = updateTriggerRequest['body'];
+                }
+            }
+
+            if(body === null || body === undefined) {
+                throw new RequiredError('body', 'Required parameter body')
+            }
+            if(func_urn === null || func_urn === undefined) {
+                throw new RequiredError('func_urn', 'Required parameter function urn')
+            }
+            if(trigger_type_code === null || trigger_type_code === undefined) {
+                throw new RequiredError('trigger_type_code', 'Required parameter trigger_type_code')
+            }
+            if(trigger_id === null || trigger_id === undefined) {
+                throw new RequiredError('trigger_id', 'Required parameter trigger_id')
+            }
+            options.url = `${client.endpoint}/v2/${client.project_id}/fgs/triggers/${func_urn}/${trigger_type_code}/${trigger_id}`
+            options.data =  JSON.stringify(Object.assign({}, body));
+            options.headers = sign(options, client);
+            return options;
+        },
+
+        deleteTrigger(deleteTriggerRequest: DeleteTriggerRequest, client: FunctionGraphClient) {
+            const options = {
+                method: "DELETE",
+                url: "",
+                headers: {"Content-Type": "application/json"},
+                data: ""
+            }
+            
+            let func_urn: any;
+            let trigger_type_code: any;
+            let trigger_id: any;
+            if (deleteTriggerRequest !== null && deleteTriggerRequest !== undefined) {
+                if (deleteTriggerRequest instanceof DeleteTriggerRequest) {
+                    func_urn = deleteTriggerRequest.func_urn;
+                    trigger_type_code = deleteTriggerRequest.trigger_type_code;
+                    trigger_id = deleteTriggerRequest.trigger_id;
+                } else {
+                    func_urn = deleteTriggerRequest['func_urn'];
+                    trigger_type_code = deleteTriggerRequest['trigger_type_code'];
+                    trigger_id = deleteTriggerRequest['trigger_id'];
+                }
+            }
+            if(func_urn === null || func_urn === undefined) {
+                throw new RequiredError('func_urn', 'Required parameter func_urn')
+            }
+            if(trigger_type_code === null || trigger_type_code === undefined) {
+                throw new RequiredError('trigger_type_code', 'Required parameter trigger_type_code')
+            }
+            if(trigger_id === null || trigger_id === undefined) {
+                throw new RequiredError('trigger_id', 'Required parameter trigger_id')
+            }
+
+            options.url = `${client.endpoint}/v2/${client.project_id}/fgs/triggers/${func_urn}/${trigger_type_code}/${trigger_id}`;
+            options.headers = sign(options, client);
+            return options;
+        },
+
+        listTrigger(listTriggerRequest: ListTriggerRequest, client: FunctionGraphClient) {
+            const options = {
+                method: "GET",
+                url: "",
+                headers: {"Content-Type": "application/json"},
+                data: ""
+            }
+            
+            let func_urn: any;
+            if (listTriggerRequest !== null && listTriggerRequest !== undefined) {
+                if (listTriggerRequest instanceof ListTriggerRequest) {
+                    func_urn = listTriggerRequest.func_urn;
+                } else {
+                    func_urn = listTriggerRequest['func_urn'];
+                }
+            }
+            if(func_urn === null || func_urn === undefined) {
+                throw new RequiredError('func_urn', 'Required parameter func_urn')
+            }
+
+            options.url = `${client.endpoint}/v2/${client.project_id}/fgs/triggers/${func_urn}`;
             options.headers = sign(options, client);
             return options;
         }

@@ -15,6 +15,10 @@ import { UpdateFunctionConfigRequest } from "../functionGraph/model/UpdateFuncti
 import express = require('express')
 import { CreateTriggerRequestBody } from "../functionGraph/model/CreateTriggerRequestBody";
 import { CreateTriggerRequest } from "../functionGraph/model/CreateTriggerRequest";
+import { ListTriggerRequest } from "../functionGraph/model/ListTriggerRequest";
+import { UpdateTriggerRequestBody } from "../functionGraph/model/UpdateTriggerRequestBody";
+import { UpdateTriggerRequest } from "../functionGraph/model/UpdateTriggerRequest";
+import { DeleteTriggerRequest } from "../functionGraph/model/DeleteTriggerRequest";
 
 const ak = '6T9ZUN0WWK4SDIAWJVOJ';
 const sk = 'JeIqadapRve0GAndO29VvuIpE7XdNh59iUKTktkx';
@@ -91,21 +95,18 @@ app.get('/updateFunctionConfig', async function(req: any, res: { send: (arg0: st
         .withBody(body))
     res.send(JSON.stringify(result));
 })
-// app.get('/getFunctionList', async function(req: any, res: { send: (arg0: string) => void;}){    
-//     const app: express.Application = express();
-//     const client = new FunctionGraphClient()
-//         .withAk(ak)
-//         .withSk(sk)
-//         .withProjectId(projectId)
-//         .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com') //https://developer.huaweicloud.com/endpoint?FunctionGraph
-//     const result = client.getFunctionList(new GetFunctionListRequest()
-//         .withPackage('default'))
-//     result.then(result => {
-//         res.send("JSON.stringify(result)::" + JSON.stringify(result))
-//     }).catch(ex => {
-//         res.send("exception:" + JSON.stringify(ex))
-//     });
-// })
+
+app.get('/getFunctionList', async function(req: any, res: { send: (arg0: string) => void;}){    
+    const app: express.Application = express();
+    const client = new FunctionGraphClient()
+        .withAk(ak)
+        .withSk(sk)
+        .withProjectId(projectId)
+        .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com') //https://developer.huaweicloud.com/endpoint?FunctionGraph
+    const result = await client.getFunctionList(new GetFunctionListRequest()
+        .withPackage('default'))
+    res.send(JSON.stringify(result));
+})
 
 app.get('/updateFunction', async function(req: any, res: { send: (arg0: string) => void;}){
     const app: express.Application = express();
@@ -160,6 +161,52 @@ app.get('/createTrigger', async function(req: any, res: { send: (arg0: string) =
         .withFunctionUrn("urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-15")
         .withBody(body));
     
+    res.send(`${JSON.stringify(result)}`);
+})
+
+app.get('/getTriggerList', async function(req: any, res: { send: (arg0: string) => void;}){    
+    const app: express.Application = express();
+    const client = new FunctionGraphClient()
+        .withAk(ak)
+        .withSk(sk)
+        .withProjectId(projectId)
+        .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com') //https://developer.huaweicloud.com/endpoint?FunctionGraph
+    const result = await client.listTrigger(new ListTriggerRequest()
+        .withFunctionUrn("urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-15"))
+    res.send(JSON.stringify(result));
+})
+
+app.get('/updateTrigger', async function(req: any, res: { send: (arg0: string) => void;}){
+    const app: express.Application = express();
+    const client = new FunctionGraphClient()
+        .withAk(ak)
+        .withSk(sk)
+        .withProjectId(projectId)
+        .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com')
+    const body = new UpdateTriggerRequestBody()
+        .withTriggerStatus("ACTIVE")
+
+    const result = await client.updateTrigger(new UpdateTriggerRequest()
+        .withTriggerId("c14f1542-97ca-4d74-b575-d171c1520c31")
+        .withTriggerTypeCode("TIMER")
+        .withFunctionUrn("urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-15")
+        .withBody(body))
+    res.send(`${JSON.stringify(result)}`);
+})
+
+app.get('/deleteTrigger', async function(req: any, res: { send: (arg0: string) => void;}){
+    const app: express.Application = express();
+    const client = new FunctionGraphClient()
+        .withAk(ak)
+        .withSk(sk)
+        .withProjectId(projectId)
+        .withEndpoint('https://functiongraph.cn-north-4.myhuaweicloud.com') //https://developer.huaweicloud.com/endpoint?FunctionGraph
+    const func_urn = "urn:fss:cn-north-4:0bcc05efb100f2a92f53c011f262dfa0:function:default:test-2021-8-27-15"
+    const result = await client.deleteTrigger(new DeleteTriggerRequest()
+        .withTriggerTypeCode("TIMER")
+        .withTriggerId("c14f1542-97ca-4d74-b575-d171c1520c31")
+        .withFunctionUrn(func_urn))
+
     res.send(`${JSON.stringify(result)}`);
 })
 
